@@ -26,7 +26,9 @@ use function str_replace;
 abstract class ClientMock
 {
     public const COULD_BE_ANYTHING = '__**__';
-    public const MULTIPLE_RETURNS = '__multiple_returns__';
+
+    /** @var array<string, array<array<string, array<mixed>>>> */
+    private static array $mocks = [];
 
     protected static Mockery\MockInterface|Mockery\LegacyMockInterface|null $client = null;
 
@@ -72,41 +74,106 @@ abstract class ClientMock
         Mockery\MockInterface $expectation
     ): Mockery\ExpectationInterface|Mockery\HigherOrderMessage;
 
-    public static function mockCall(string $method, mixed $response = null, mixed ...$requestParameters): void
+    public static function registerMock(string $method, mixed $response = null, mixed ...$requestParameters): void
     {
-        $client = self::client();
-        $clientClass = static::clientClass();
+        self::checkClientMethodExists($method);
 
-        if (! method_exists($clientClass, $method)) {
-            throw new RuntimeException(
-                sprintf(
-                    'Can\'t mock method \'%s\' for class \'%s\' because it doesn\'t exists.',
-                    $method,
-                    $clientClass
-                )
-            );
+        if (! isset(static::$mocks[$method])) {
+            static::$mocks[$method] = [];
         }
 
-        /** @var Mockery\Expectation $requestExpectation */
-        $requestExpectation = $client->shouldReceive($method);
+        foreach (static::$mocks[$method] as $index => $mockForMethodPerRequest) {
+            if (self::equalRequestParameterList($mockForMethodPerRequest['requestParameters'], $requestParameters)) {
+                static::$mocks[$method][$index]['response'][] = $response;
 
-        if (! empty($requestParameters)) {
-            $arguments = array_map(
-                static fn ($requestParameter) => Mockery::on(
-                    static function ($requestParameterOfCall) use ($requestParameter) {
-                        return static::compareRequest($requestParameterOfCall, $requestParameter);
-                    }
-                ),
-                $requestParameters
-            );
-
-            $requestExpectation->with(...$arguments);
+                return;
+            }
         }
 
-        $requestExpectation->andReturnValues(static::buildResponse($method, $response));
+        static::$mocks[$method][] = [
+            'requestParameters' => $requestParameters,
+            'response' => [$response],
+        ];
     }
 
-    protected static function compareRequest(mixed $requestParameterOfCall, mixed $requestParameterOfMock): bool
+    private static function checkClientMethodExists(string $method): void
+    {
+        $clientClass = static::clientClass();
+
+        if (method_exists($clientClass, $method)) {
+            return;
+        }
+
+        throw new RuntimeException(
+            sprintf(
+                'Can\'t mock method \'%s\' for class \'%s\' because it doesn\'t exists.',
+                $method,
+                $clientClass
+            )
+        );
+    }
+
+    /**
+     * @param array<mixed> $existingRequestParameters
+     * @param array<mixed> $newRequestParameters
+     */
+    private static function equalRequestParameterList(
+        array $existingRequestParameters,
+        array $newRequestParameters
+    ): bool {
+        $index = -1;
+        foreach ($existingRequestParameters as $index => $existingRequestParameter) {
+            if (! isset($newRequestParameters[$index])) {
+                return false;
+            }
+
+            if (! static::equalRequestParameters($existingRequestParameter, $newRequestParameters[$index])) {
+                return false;
+            }
+        }
+
+        // if the new request parameters contain more parameters than the existing request parameters does
+        return ! isset($newRequestParameters[$index + 1]);
+    }
+
+    public static function buildMocks(): void
+    {
+        $client = self::client();
+
+        foreach (static::$mocks as $method => $differentRequests) {
+            foreach ($differentRequests as $differentRequest) {
+                /** @var Mockery\Expectation $requestExpectation */
+                $requestExpectation = $client->shouldReceive($method);
+
+                if (! empty($differentRequest['requestParameters'])) {
+                    $requestParameters = array_map(
+                        static fn ($expectedRequestParameter) => Mockery::on(
+                            static function ($givenRequestParameter) use ($expectedRequestParameter) {
+                                return static::equalRequestParameters(
+                                    $expectedRequestParameter,
+                                    $givenRequestParameter
+                                );
+                            }
+                        ),
+                        $differentRequest['requestParameters']
+                    );
+
+                    $requestExpectation->with(...$requestParameters);
+                }
+
+                $requestExpectation->andReturnValues(
+                    array_map(
+                        static fn ($response) => static::buildResponse($method, $response),
+                        $differentRequest['response']
+                    )
+                );
+            }
+        }
+
+        static::$mocks = [];
+    }
+
+    protected static function equalRequestParameters(mixed $requestParameterOfCall, mixed $requestParameterOfMock): bool
     {
         if ($requestParameterOfCall instanceof ImmutableRecord) {
             $requestParameterOfCall = $requestParameterOfCall->toArray();
@@ -160,26 +227,7 @@ abstract class ClientMock
         return (bool) preg_match('/' . $quotedSecond . '/', $encodedFirst);
     }
 
-    /**
-     * @return array<mixed>
-     */
-    protected static function buildResponse(string $method, mixed $response): array
-    {
-        if (
-            is_array($response)
-            && isset($response[self::MULTIPLE_RETURNS])
-            && ! ArrayUtil::isAssociative($response[self::MULTIPLE_RETURNS])
-        ) {
-            return array_map(
-                static fn ($oneResponse) => static::buildOneResponse($method, $oneResponse),
-                $response[self::MULTIPLE_RETURNS]
-            );
-        }
-
-        return [static::buildOneResponse($method, $response)];
-    }
-
-    abstract protected static function buildOneResponse(string $method, mixed $response): mixed;
+    abstract protected static function buildResponse(string $method, mixed $response): mixed;
 
     /**
      * @return class-string
@@ -222,6 +270,6 @@ abstract class ClientMock
      */
     public static function __callStatic(string $name, array $arguments): void
     {
-        self::mockCall($name, ...$arguments);
+        self::registerMock($name, ...$arguments);
     }
 }
