@@ -17,7 +17,7 @@ abstract class SoapClientMock extends ClientMock
         return $expectation->shouldReceive('factory');
     }
 
-    protected static function buildOneResponse(string $method, mixed $response): mixed
+    protected static function buildResponse(string $method, mixed $response): mixed
     {
         $addition = is_array($response) ? '->toArray' : '';
         $mockResponse = Mockery::mock('response');

@@ -24,7 +24,7 @@ abstract class RestClientMock extends ClientMock
         return $withReturn->shouldReceive('build');
     }
 
-    protected static function buildOneResponse(string $method, mixed $response): mixed
+    protected static function buildResponse(string $method, mixed $response): mixed
     {
         /** @var ReflectionNamedType|null $returnType */
         $returnType = static::reflectionMethod($method)->getReturnType();
