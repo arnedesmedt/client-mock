@@ -11,8 +11,11 @@ use Mockery;
 use ReflectionClass;
 use ReflectionMethod;
 use RuntimeException;
+use Throwable;
 
+use function array_filter;
 use function array_map;
+use function count;
 use function gettype;
 use function is_array;
 use function is_scalar;
@@ -161,6 +164,10 @@ abstract class ClientMock
                     $requestExpectation->with(...$requestParameters);
                 }
 
+                if (self::checkAllResponsesAreExceptions($differentRequest['response'])) {
+                    $requestExpectation->andThrowExceptions($differentRequest['response']);
+                }
+
                 $requestExpectation->andReturnValues(
                     array_map(
                         static fn ($response) => static::buildResponse($method, $response),
@@ -225,6 +232,27 @@ abstract class ClientMock
         $quotedSecond = str_replace(['"__\*\*__"', '__\*\*__'], '.*', preg_quote($encodedSecond, '/'));
 
         return (bool) preg_match('/' . $quotedSecond . '/', $encodedFirst);
+    }
+
+    /**
+     * @param array<mixed> $possibleExceptions
+     */
+    private static function checkAllResponsesAreExceptions(array $possibleExceptions): bool
+    {
+        $exceptions = array_filter(
+            $possibleExceptions,
+            static fn ($possibleException) => $possibleException instanceof Throwable
+        );
+
+        if (count($exceptions) === count($possibleExceptions)) {
+            return true;
+        }
+
+        if (count($exceptions) > 0) {
+            throw new RuntimeException('Result of client call needs to be all exceptions or all responses.');
+        }
+
+        return false;
     }
 
     abstract protected static function buildResponse(string $method, mixed $response): mixed;
