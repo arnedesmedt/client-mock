@@ -230,9 +230,9 @@ abstract class ClientMock
             return false;
         }
 
-        $quotedSecond = str_replace(['"__\*\*__"', '__\*\*__'], '.*', preg_quote($encodedSecond, '/'));
+        $quotedFirst = str_replace(['"__\*\*__"', '__\*\*__'], '.*', preg_quote($encodedFirst, '/'));
 
-        return (bool) preg_match('/' . $quotedSecond . '/', $encodedFirst);
+        return (bool) preg_match('/' . $quotedFirst . '/', $encodedSecond);
     }
 
     /**
