@@ -141,7 +141,7 @@ abstract class ClientMock
 
     public static function buildMocks(): void
     {
-        $client = self::client();
+        $client = static::client();
 
         foreach (static::$mocks as $method => $differentRequests) {
             foreach ($differentRequests as $differentRequest) {
@@ -166,6 +166,7 @@ abstract class ClientMock
 
                 if (self::checkAllResponsesAreExceptions($differentRequest['response'])) {
                     $requestExpectation->andThrowExceptions($differentRequest['response']);
+                    continue;
                 }
 
                 $requestExpectation->andReturnValues(
@@ -298,6 +299,6 @@ abstract class ClientMock
      */
     public static function __callStatic(string $name, array $arguments): void
     {
-        self::registerMock($name, ...$arguments);
+        static::registerMock($name, ...$arguments);
     }
 }
