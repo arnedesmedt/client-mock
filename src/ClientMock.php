@@ -73,6 +73,11 @@ abstract class ClientMock
         static::$client = null;
     }
 
+    public static function initClient(): void
+    {
+        static::client();
+    }
+
     abstract protected static function describeFactoryMock(
         Mockery\MockInterface $expectation
     ): Mockery\ExpectationInterface|Mockery\HigherOrderMessage;
@@ -261,22 +266,22 @@ abstract class ClientMock
     /**
      * @return class-string
      */
-    abstract protected static function factoryClass(): string;
+    abstract public static function factoryClass(): string;
 
     /**
      * @return class-string
      */
-    abstract protected static function clientClass(): string;
+    abstract public static function clientClass(): string;
 
     /**
-     * @return ReflectionClass<object>|null
+     * @return ReflectionClass<object>
      */
-    protected static function clientReflectionClass(): ?ReflectionClass
+    public static function clientReflectionClass(): ReflectionClass
     {
         return new ReflectionClass(static::clientClass());
     }
 
-    protected static function reflectionMethod(string $method): ReflectionMethod
+    public static function reflectionMethod(string $method): ReflectionMethod
     {
         /** @var ReflectionClass<object> $clientReflectionClass */
         $clientReflectionClass = static::clientReflectionClass();
