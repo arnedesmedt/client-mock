@@ -12,7 +12,7 @@ trait MockLogic
     {
     }
 
-    /** @return array<MockMethod> */
+    /** @return array<string, MockMethod> */
     public function calls(): array
     {
         return $this->persister->calls();
@@ -22,6 +22,13 @@ trait MockLogic
     public function withReturnValue(ImmutableRecord|array $returnValue): self
     {
         $this->persister->withReturnValue($returnValue);
+
+        return $this;
+    }
+
+    public function repeat(int $times = 1): self
+    {
+        $this->persister->repeat($times);
 
         return $this;
     }

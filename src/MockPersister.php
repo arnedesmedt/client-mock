@@ -7,13 +7,17 @@ namespace ADS\ClientMock;
 use EventEngine\Data\ImmutableRecord;
 use RuntimeException;
 
-use function assert;
+use function array_combine;
+use function array_filter;
+use function array_keys;
+use function array_values;
+use function end;
 use function sprintf;
 
 class MockPersister
 {
     private MockMethod|null $lastCall = null;
-    /** @var array<string, MockMethod> */
+    /** @var array<int, MockMethod> */
     private array $calls = [];
 
     public function __construct(private readonly ReturnValueTransformer|null $returnValueTransformer = null)
@@ -34,17 +38,13 @@ class MockPersister
     /** @param ImmutableRecord|array<ImmutableRecord> $returnValue */
     public function withReturnValue(ImmutableRecord|array $returnValue): void
     {
-        assert($this->lastCall instanceof MockMethod);
+        if (! $this->lastCall instanceof MockMethod) {
+            throw new RuntimeException('You must call a method before calling withReturnValue().');
+        }
 
         $returnValue = $this->transformReturnValue($returnValue);
 
-        $lastCall = $this->lastCall->addReturnValue($returnValue);
-
-        if (isset($this->calls[$lastCall->method()])) {
-            $lastCall = $this->calls[$lastCall->method()]->merge($lastCall);
-        }
-
-        $this->calls[$lastCall->method()] = $lastCall;
+        $this->calls[] = $this->lastCall->addReturnValue($returnValue);
 
         $this->lastCall = null;
     }
@@ -52,7 +52,16 @@ class MockPersister
     /** @return array<string, MockMethod> */
     public function calls(): array
     {
-        return $this->calls;
+        $callsPerMethod = [];
+        foreach ($this->calls as $call) {
+            if (isset($callsPerMethod[$call->method()])) {
+                $call = $callsPerMethod[$call->method()]->merge($call);
+            }
+
+            $callsPerMethod[$call->method()] = $call;
+        }
+
+        return $callsPerMethod;
     }
 
     /**
@@ -72,15 +81,25 @@ class MockPersister
     public function removeMockMethods(string ...$methods): void
     {
         foreach ($methods as $method) {
-            $this->needMockMethod($method);
+            foreach ($this->calls as $index => $call) {
+                if ($call->method() !== $method) {
+                    continue;
+                }
 
-            unset($this->calls[$method]);
+                unset($this->calls[$index]);
+            }
         }
     }
 
-    private function needMockMethod(string $method): MockMethod
+    /** @return array<MockMethod> */
+    private function needMockMethods(string $method): array
     {
-        if (! isset($this->calls[$method])) {
+        $methodCalls = array_filter(
+            $this->calls,
+            static fn (MockMethod $call) => $call->method() === $method,
+        );
+
+        if (empty($methodCalls)) {
             throw new RuntimeException(
                 sprintf(
                     'Mock method %s does not exist.',
@@ -89,18 +108,35 @@ class MockPersister
             );
         }
 
-        return $this->calls[$method];
+        return $methodCalls;
     }
 
     public function removeMockMethodForIndex(string $method, int $index): void
     {
-        $mockMethod = $this->needMockMethod($method);
-        $mockMethod->removeIndex($index);
+        $mockMethods = $this->needMockMethods($method);
+        $originalKeys = array_keys($mockMethods);
+        $newKeys = array_keys(array_values($mockMethods));
+        $mapping = array_combine($newKeys, $originalKeys);
+
+        unset($this->calls[$mapping[$index]]);
     }
 
     public function removeAllMocks(): void
     {
         $this->calls = [];
         $this->lastCall = null;
+    }
+
+    public function repeat(int $times = 1): void
+    {
+        if ($this->lastCall !== null || empty($this->calls)) {
+            throw new RuntimeException('Can\'t call repeat() after calling a method or if no calling has done.');
+        }
+
+        $call = end($this->calls);
+
+        for ($i = 0; $i < $times; $i++) {
+            $this->calls[] = clone $call;
+        }
     }
 }
