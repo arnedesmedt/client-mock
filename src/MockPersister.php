@@ -8,11 +8,12 @@ use EventEngine\Data\ImmutableRecord;
 use RuntimeException;
 
 use function assert;
+use function sprintf;
 
 class MockPersister
 {
     private MockMethod|null $lastCall = null;
-    /** @var array<MockMethod> */
+    /** @var array<string, MockMethod> */
     private array $calls = [];
 
     public function __construct(private readonly ReturnValueTransformer|null $returnValueTransformer = null)
@@ -48,7 +49,7 @@ class MockPersister
         $this->lastCall = null;
     }
 
-    /** @return array<MockMethod> */
+    /** @return array<string, MockMethod> */
     public function calls(): array
     {
         return $this->calls;
@@ -66,5 +67,34 @@ class MockPersister
         }
 
         return ($this->returnValueTransformer)($returnValue, $this->lastCall);
+    }
+
+    public function removeMockMethods(string ...$methods): void
+    {
+        foreach ($methods as $method) {
+            $this->needMockMethod($method);
+
+            unset($this->calls[$method]);
+        }
+    }
+
+    private function needMockMethod(string $method): MockMethod
+    {
+        if (! isset($this->calls[$method])) {
+            throw new RuntimeException(
+                sprintf(
+                    'Mock method %s does not exist.',
+                    $method,
+                ),
+            );
+        }
+
+        return $this->calls[$method];
+    }
+
+    public function removeMockMethodForIndex(string $method, int $index): void
+    {
+        $mockMethod = $this->needMockMethod($method);
+        $mockMethod->removeIndex($index);
     }
 }

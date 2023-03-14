@@ -25,4 +25,18 @@ trait MockLogic
 
         return $this;
     }
+
+    public function removeMockMethods(string ...$methods): self
+    {
+        $this->persister->removeMockMethods(...$methods);
+
+        return $this;
+    }
+
+    public function removeMockMethodForIndex(string $method, int $index): self
+    {
+        $this->persister->removeMockMethodForIndex($method, $index);
+
+        return $this;
+    }
 }

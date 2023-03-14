@@ -7,6 +7,8 @@ namespace ADS\ClientMock;
 use EventEngine\Data\ImmutableRecord;
 use RuntimeException;
 
+use function sprintf;
+
 class MockMethod
 {
     /** @var array<array<mixed>> */
@@ -62,5 +64,21 @@ class MockMethod
     public function returnValues(): array
     {
         return $this->returnValues;
+    }
+
+    public function removeIndex(int $index): void
+    {
+        if (! isset($this->parametersPerCall[$index]) || ! isset($this->returnValues[$index])) {
+            throw new RuntimeException(
+                sprintf(
+                    'No parameters and return value index \'%d\' found for method %s',
+                    $index,
+                    $this->method,
+                ),
+            );
+        }
+
+        unset($this->parametersPerCall[$index]);
+        unset($this->returnValues[$index]);
     }
 }
