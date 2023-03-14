@@ -97,4 +97,10 @@ class MockPersister
         $mockMethod = $this->needMockMethod($method);
         $mockMethod->removeIndex($index);
     }
+
+    public function removeAllMocks(): void
+    {
+        $this->calls = [];
+        $this->lastCall = null;
+    }
 }
