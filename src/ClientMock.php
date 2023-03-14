@@ -26,10 +26,12 @@ use function preg_quote;
 use function sprintf;
 use function str_replace;
 
+use const JSON_THROW_ON_ERROR;
+
 /** @SuppressWarnings(PHPMD.CouplingBetweenObjects) */
 abstract class ClientMock
 {
-    public const COULD_BE_ANYTHING = '__**__';
+    final public const COULD_BE_ANYTHING = '__**__';
 
     /** @var array<string, array<array<string, array<mixed>>>> */
     protected static array $mocks = [];
@@ -157,12 +159,10 @@ abstract class ClientMock
                 if (! empty($differentRequest['requestParameters'])) {
                     $requestParameters = array_map(
                         static fn ($expectedRequestParameter) => Mockery::on(
-                            static function ($givenRequestParameter) use ($expectedRequestParameter) {
-                                return static::equalRequestParameters(
-                                    $expectedRequestParameter,
-                                    $givenRequestParameter,
-                                );
-                            },
+                            static fn ($givenRequestParameter) => static::equalRequestParameters(
+                                $expectedRequestParameter,
+                                $givenRequestParameter,
+                            ),
                         ),
                         $differentRequest['requestParameters'],
                     );
@@ -229,12 +229,8 @@ abstract class ClientMock
         ArrayUtil::ksortRecursive($first);
         ArrayUtil::ksortRecursive($second);
 
-        $encodedFirst = json_encode($first);
-        $encodedSecond = json_encode($second);
-
-        if ($encodedFirst === false || $encodedSecond === false) {
-            return false;
-        }
+        $encodedFirst = json_encode($first, JSON_THROW_ON_ERROR);
+        $encodedSecond = json_encode($second, JSON_THROW_ON_ERROR);
 
         $quotedFirst = str_replace(['"__\*\*__"', '__\*\*__'], '.*', preg_quote($encodedFirst, '/'));
 
