@@ -18,8 +18,8 @@ trait MockLogic
         return $this->persister->calls();
     }
 
-    /** @param ImmutableRecord|array<ImmutableRecord> $returnValue */
-    public function withReturnValue(ImmutableRecord|array $returnValue): self
+    /** @param ImmutableRecord|array<ImmutableRecord>|bool $returnValue */
+    public function withReturnValue(ImmutableRecord|array|bool $returnValue): self
     {
         $this->persister->withReturnValue($returnValue);
 
