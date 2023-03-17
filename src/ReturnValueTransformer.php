@@ -9,9 +9,12 @@ use EventEngine\Data\ImmutableRecord;
 interface ReturnValueTransformer
 {
     /**
-     * @param ImmutableRecord|array<ImmutableRecord> $returnValue
+     * @param ImmutableRecord|array<ImmutableRecord>|bool $returnValue
      *
-     * @return ImmutableRecord|array<ImmutableRecord>
+     * @return ImmutableRecord|array<ImmutableRecord>|bool
      */
-    public function __invoke(ImmutableRecord|array $returnValue, MockMethod|null $method = null): ImmutableRecord|array;
+    public function __invoke(
+        ImmutableRecord|array|bool $returnValue,
+        MockMethod|null $method = null,
+    ): ImmutableRecord|array|bool;
 }
