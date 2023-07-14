@@ -35,8 +35,8 @@ class MockPersister
         return $this;
     }
 
-    /** @param ImmutableRecord|array<ImmutableRecord>|bool $returnValue */
-    public function withReturnValue(ImmutableRecord|array|bool $returnValue): void
+    /** @param ImmutableRecord|array<ImmutableRecord>|bool|string $returnValue */
+    public function withReturnValue(ImmutableRecord|array|bool|string $returnValue): void
     {
         if (! $this->lastCall instanceof MockMethod) {
             throw new RuntimeException('You must call a method before calling withReturnValue().');
@@ -65,12 +65,13 @@ class MockPersister
     }
 
     /**
-     * @param ImmutableRecord|array<ImmutableRecord>|bool $returnValue
+     * @param ImmutableRecord|array<ImmutableRecord>|bool|string $returnValue
      *
-     * @return ImmutableRecord|array<ImmutableRecord>|bool
+     * @return ImmutableRecord|array<ImmutableRecord>|bool|string
      */
-    private function transformReturnValue(ImmutableRecord|array|bool $returnValue): ImmutableRecord|array|bool
-    {
+    private function transformReturnValue(
+        ImmutableRecord|array|bool|string $returnValue,
+    ): ImmutableRecord|array|bool|string {
         if ($this->returnValueTransformer === null) {
             return $returnValue;
         }

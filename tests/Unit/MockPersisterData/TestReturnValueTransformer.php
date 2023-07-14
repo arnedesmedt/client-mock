@@ -11,9 +11,9 @@ use EventEngine\Data\ImmutableRecord;
 class TestReturnValueTransformer implements ReturnValueTransformer
 {
     public function __invoke(
-        ImmutableRecord|array|bool $returnValue,
+        ImmutableRecord|array|bool|string $returnValue,
         MockMethod|bool|null $method = null,
-    ): ImmutableRecord|array|bool {
+    ): ImmutableRecord|array|bool|string {
         return $returnValue;
     }
 }

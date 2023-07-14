@@ -42,7 +42,7 @@ class MockMethod
     }
 
     /** @param ImmutableRecord|array<mixed>|bool $returnValue */
-    public function addReturnValue(ImmutableRecord|array|bool $returnValue): self
+    public function addReturnValue(ImmutableRecord|array|bool|string $returnValue): self
     {
         $this->returnValues[] = $returnValue;
 
