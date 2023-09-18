@@ -5,6 +5,11 @@ declare(strict_types=1);
 namespace ADS\ClientMock;
 
 use EventEngine\Data\ImmutableRecord;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
+
+use function array_map;
+use function count;
 
 trait MockLogic
 {
@@ -52,5 +57,22 @@ trait MockLogic
         $this->persister->removeMockMethodForIndex($method, $index);
 
         return $this;
+    }
+
+    public function build(TestCase $testCase, MockObject $mock): void
+    {
+        foreach ($this->calls() as $call) {
+            $mock
+                ->expects($testCase->exactly(count($call->parametersPerCall())))
+                ->method($call->method())
+                ->withConsecutive(
+                    ...array_map(
+                        static fn (array $parameters) => array_map(static fn ($parameter) => $testCase
+                            ->equalTo($parameter), $parameters),
+                        $call->parametersPerCall(),
+                    ),
+                )
+                ->willReturnOnConsecutiveCalls(...$call->returnValues());
+        }
     }
 }
