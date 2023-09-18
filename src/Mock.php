@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ADS\ClientMock;
 
 use EventEngine\Data\ImmutableRecord;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 interface Mock
@@ -17,5 +18,5 @@ interface Mock
 
     public function withReturnValue(ImmutableRecord $immutableRecord): self;
 
-    public function build(TestCase $testCase): void;
+    public function build(TestCase $testCase, MockObject $mock): void;
 }
