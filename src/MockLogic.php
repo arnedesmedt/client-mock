@@ -7,6 +7,7 @@ namespace ADS\ClientMock;
 use EventEngine\Data\ImmutableRecord;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Throwable;
 
 use function array_map;
 use function count;
@@ -27,6 +28,13 @@ trait MockLogic
     public function withReturnValue(ImmutableRecord|array|bool|string $returnValue): self
     {
         $this->persister->withReturnValue($returnValue);
+
+        return $this;
+    }
+
+    public function withException(Throwable $exception): self
+    {
+        $this->persister->withException($exception);
 
         return $this;
     }

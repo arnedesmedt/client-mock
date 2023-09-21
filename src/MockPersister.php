@@ -6,6 +6,7 @@ namespace ADS\ClientMock;
 
 use EventEngine\Data\ImmutableRecord;
 use RuntimeException;
+use Throwable;
 
 use function array_combine;
 use function array_filter;
@@ -45,6 +46,17 @@ class MockPersister
         $returnValue = $this->transformReturnValue($returnValue);
 
         $this->calls[] = $this->lastCall->addReturnValue($returnValue);
+
+        $this->lastCall = null;
+    }
+
+    public function withException(Throwable $exception): void
+    {
+        if (! $this->lastCall instanceof MockMethod) {
+            throw new RuntimeException('You must call a method before calling withException().');
+        }
+
+        $this->calls[] = $this->lastCall->addException($exception);
 
         $this->lastCall = null;
     }
