@@ -6,6 +6,7 @@ namespace ADS\ClientMock;
 
 use EventEngine\Data\ImmutableRecord;
 use RuntimeException;
+use Throwable;
 
 use function sprintf;
 
@@ -13,8 +14,8 @@ class MockMethod
 {
     /** @var array<array<mixed>> */
     private array $parametersPerCall = [];
-    /** @var array<mixed> */
-    private array $returnValues = [];
+    /** @var array<array{type: string, value: mixed}> */
+    private array $returnValuesOrExceptions = [];
 
     public function __construct(
         private readonly string $method,
@@ -36,7 +37,10 @@ class MockMethod
         }
 
         $this->parametersPerCall = [...$this->parametersPerCall, ...$lastCall->parametersPerCall()];
-        $this->returnValues = [...$this->returnValues, ...$lastCall->returnValues()];
+        $this->returnValuesOrExceptions = [
+            ...$this->returnValuesOrExceptions,
+            ...$lastCall->returnValuesOrExceptions(),
+        ];
 
         return $this;
     }
@@ -44,7 +48,20 @@ class MockMethod
     /** @param ImmutableRecord|array<mixed>|bool $returnValue */
     public function addReturnValue(ImmutableRecord|array|bool|string $returnValue): self
     {
-        $this->returnValues[] = $returnValue;
+        $this->returnValuesOrExceptions[] = [
+            'type' => 'return',
+            'value' => $returnValue,
+        ];
+
+        return $this;
+    }
+
+    public function addException(Throwable $exception): self
+    {
+        $this->returnValuesOrExceptions[] = [
+            'type' => 'exception',
+            'value' => $exception,
+        ];
 
         return $this;
     }
@@ -60,15 +77,15 @@ class MockMethod
         return $this->parametersPerCall;
     }
 
-    /** @return array<mixed> */
-    public function returnValues(): array
+    /** @return array<array{type: string, value: mixed}> */
+    public function returnValuesOrExceptions(): array
     {
-        return $this->returnValues;
+        return $this->returnValuesOrExceptions;
     }
 
     public function removeIndex(int $index): void
     {
-        if (! isset($this->parametersPerCall[$index]) || ! isset($this->returnValues[$index])) {
+        if (! isset($this->parametersPerCall[$index]) || ! isset($this->returnValuesOrExceptions[$index])) {
             throw new RuntimeException(
                 sprintf(
                     'No parameters and return value index \'%d\' found for method %s',
@@ -79,6 +96,6 @@ class MockMethod
         }
 
         unset($this->parametersPerCall[$index]);
-        unset($this->returnValues[$index]);
+        unset($this->returnValuesOrExceptions[$index]);
     }
 }

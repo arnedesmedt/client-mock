@@ -62,17 +62,29 @@ trait MockLogic
     public function build(TestCase $testCase, MockObject $mock): void
     {
         foreach ($this->calls() as $call) {
-            $mock
-                ->expects($testCase->exactly(count($call->parametersPerCall())))
-                ->method($call->method())
-                ->withConsecutive(
-                    ...array_map(
-                        static fn (array $parameters) => array_map(static fn ($parameter) => $testCase
-                            ->equalTo($parameter), $parameters),
-                        $call->parametersPerCall(),
-                    ),
-                )
-                ->willReturnOnConsecutiveCalls(...$call->returnValues());
+            $parameters = $call->parametersPerCall();
+            $matcher = $testCase->exactly(count($parameters));
+            $returnValuesOrExceptions = $call->returnValuesOrExceptions();
+
+            $invocationMocker = $mock
+                ->expects($matcher)
+                ->method($call->method());
+
+            foreach ($returnValuesOrExceptions as $index => $returnValueOrException) {
+                $isReturnValue = $returnValueOrException['type'] === 'return';
+
+                $invocationMocker
+                    ->with(...array_map(
+                        static fn ($parameter) => $testCase->equalTo($parameter),
+                        $parameters[$index],
+                    ));
+
+                $willMethod = $isReturnValue
+                    ? 'willReturn'
+                    : 'willThrowException';
+
+                $invocationMocker->{$willMethod}($returnValueOrException['value']);
+            }
         }
     }
 }
