@@ -9,7 +9,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Throwable;
 
-use function array_map;
+use function array_slice;
 use function count;
 
 trait MockLogic
@@ -70,29 +70,37 @@ trait MockLogic
     public function build(TestCase $testCase, MockObject $mock): void
     {
         foreach ($this->calls() as $call) {
-            $parameters = $call->parametersPerCall();
-            $matcher = $testCase->exactly(count($parameters));
+            $parametersPerCall = $call->parametersPerCall();
             $returnValuesOrExceptions = $call->returnValuesOrExceptions();
 
-            $invocationMocker = $mock
+            $matcher = $testCase->exactly(count($parametersPerCall));
+            $mock
                 ->expects($matcher)
-                ->method($call->method());
+                ->method($call->method())
+                ->willReturnCallback(
+                    static function (...$parameters) use (
+                        $testCase,
+                        $matcher,
+                        $parametersPerCall,
+                        $returnValuesOrExceptions,
+                    ) {
+                        $invocation = $matcher->getInvocationCount();
+                        $expectedParameters = $parametersPerCall[$invocation - 1];
+                        $returnOrException = $returnValuesOrExceptions[$invocation - 1];
 
-            foreach ($returnValuesOrExceptions as $index => $returnValueOrException) {
-                $isReturnValue = $returnValueOrException['type'] === 'return';
+                        if (count($parameters) > count($expectedParameters)) {
+                            $parameters = array_slice($parameters, 0, count($expectedParameters));
+                        }
 
-                $invocationMocker
-                    ->with(...array_map(
-                        static fn ($parameter) => $testCase->equalTo($parameter),
-                        $parameters[$index],
-                    ));
+                        $testCase->assertEquals($expectedParameters, $parameters);
 
-                $willMethod = $isReturnValue
-                    ? 'willReturn'
-                    : 'willThrowException';
+                        if ($returnOrException['type'] === 'exception') {
+                            throw $returnOrException['value'];
+                        }
 
-                $invocationMocker->{$willMethod}($returnValueOrException['value']);
-            }
+                        return $returnOrException['value'];
+                    },
+                );
         }
     }
 }
