@@ -21,7 +21,7 @@
     },
     "require-dev": {
         "doctrine/coding-standard": "~11.0",
-        "icanhazstring/composer-unused": "^0.8.6",
+        "icanhazstring/composer-unused": "~0.1",
         "phpmd/phpmd": "~2.0",
         "phpro/grumphp": "~2.0",
         "phpstan/phpstan": "~1.0",

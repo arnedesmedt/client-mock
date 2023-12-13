@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ba8107f8f6680c8d8e8cc0193ce73f38",
+    "content-hash": "08846d882070d909563a310fe3818b0e",
     "packages": [
         {
             "name": "arnedesmedt/json-immutable-objects",
