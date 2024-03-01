@@ -53,6 +53,13 @@ trait MockLogic
         return $this;
     }
 
+    public function removeMockMethodsExcept(string ...$methods): self
+    {
+        $this->persister->removeMockMethodsExcept(...$methods);
+
+        return $this;
+    }
+
     public function removeAllMocks(): self
     {
         $this->persister->removeAllMocks();
