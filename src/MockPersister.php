@@ -104,6 +104,19 @@ class MockPersister
         }
     }
 
+    public function removeMockMethodsExcept(string ...$methods): void
+    {
+        foreach ($methods as $method) {
+            foreach ($this->calls as $index => $call) {
+                if ($call->method() === $method) {
+                    continue;
+                }
+
+                unset($this->calls[$index]);
+            }
+        }
+    }
+
     /** @return array<MockMethod> */
     private function needMockMethods(string $method): array
     {
