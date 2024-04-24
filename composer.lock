@@ -173,29 +173,29 @@
         },
         {
             "name": "arnedesmedt/value-objects",
-            "version": "0.4.18",
+            "version": "0.4.19",
             "source": {
                 "type": "git",
                 "url": "https://github.com/arnedesmedt/value-objects.git",
-                "reference": "35843949ea8367f9d638e450b5ae7f55e760168c"
+                "reference": "748cc9470dbaf63e46f54ef85f76eb34ee9506c7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/arnedesmedt/value-objects/zipball/35843949ea8367f9d638e450b5ae7f55e760168c",
-                "reference": "35843949ea8367f9d638e450b5ae7f55e760168c",
+                "url": "https://api.github.com/repos/arnedesmedt/value-objects/zipball/748cc9470dbaf63e46f54ef85f76eb34ee9506c7",
+                "reference": "748cc9470dbaf63e46f54ef85f76eb34ee9506c7",
                 "shasum": ""
             },
             "require": {
                 "arnedesmedt/php-exception": "~0.1",
                 "ext-intl": "*",
                 "ext-json": "*",
-                "php": "^8.2",
+                "php": "^8.1 || ^8.2",
                 "ramsey/uuid": "~4.0",
-                "symfony/http-kernel": "~6.0"
+                "symfony/http-kernel": "~6.0 || ~7.0"
             },
             "require-dev": {
                 "doctrine/coding-standard": "~11.0",
-                "icanhazstring/composer-unused": "^0.8.11",
+                "icanhazstring/composer-unused": "~0.1",
                 "phpmd/phpmd": "~2.0",
                 "phpro/grumphp": "~2.0",
                 "phpstan/phpstan": "~1.0",
@@ -224,9 +224,9 @@
             "homepage": "https://github.com/arnedesmedt/value-objects",
             "support": {
                 "issues": "https://github.com/arnedesmedt/value-objects/issues",
-                "source": "https://github.com/arnedesmedt/value-objects/tree/0.4.18"
+                "source": "https://github.com/arnedesmedt/value-objects/tree/0.4.19"
             },
-            "time": "2023-12-13T09:12:06+00:00"
+            "time": "2024-01-24T20:31:51+00:00"
         },
         {
             "name": "brick/math",
