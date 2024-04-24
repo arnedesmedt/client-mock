@@ -119,31 +119,31 @@
         },
         {
             "name": "arnedesmedt/php-util",
-            "version": "0.3.17",
+            "version": "0.4.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/arnedesmedt/php-util.git",
-                "reference": "e61e19e3d3d2202623884dd99f6383f90e65b332"
+                "reference": "b1035b45c735fbefbffe74c2b1c53c1ae2a37d38"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/arnedesmedt/php-util/zipball/e61e19e3d3d2202623884dd99f6383f90e65b332",
-                "reference": "e61e19e3d3d2202623884dd99f6383f90e65b332",
+                "url": "https://api.github.com/repos/arnedesmedt/php-util/zipball/b1035b45c735fbefbffe74c2b1c53c1ae2a37d38",
+                "reference": "b1035b45c735fbefbffe74c2b1c53c1ae2a37d38",
                 "shasum": ""
             },
             "require": {
                 "event-engine/php-json-schema": "~3.0",
-                "php": "^8.2",
-                "symfony/http-kernel": "~6.0"
+                "php": "^8.1 || ^8.2 || ^8.3",
+                "symfony/http-kernel": "~6.0 || ~7.0"
             },
             "require-dev": {
                 "arnedesmedt/json-immutable-objects": "~0.1",
-                "doctrine/coding-standard": "~11.0",
+                "doctrine/coding-standard": "~12.0",
                 "phpmd/phpmd": "~2.0",
                 "phpro/grumphp": "~2.0",
                 "phpstan/phpstan": "~1.0",
-                "phpunit/phpunit": "~9.0",
-                "rector/rector": "~0.1",
+                "phpunit/phpunit": "~11.0",
+                "rector/rector": "~1.0",
                 "squizlabs/php_codesniffer": "~3.0"
             },
             "type": "library",
@@ -167,9 +167,9 @@
             "homepage": "https://github.com/arnedesmedt/php-util",
             "support": {
                 "issues": "https://github.com/arnedesmedt/php-util/issues",
-                "source": "https://github.com/arnedesmedt/php-util/tree/0.3.17"
+                "source": "https://github.com/arnedesmedt/php-util/tree/0.4.1"
             },
-            "time": "2023-12-13T08:32:34+00:00"
+            "time": "2024-02-16T15:23:37+00:00"
         },
         {
             "name": "arnedesmedt/value-objects",
